@@ -3,104 +3,146 @@
 from openai import OpenAI
 from app.config import OPENAI_API_KEY
 
-SYSTEM_PROMPT = """You are a LinkedIn post writing assistant. You write engaging,
-personal posts related to business topics. Your writing style is:
+SYSTEM_PROMPT = """You are a LinkedIn post writing assistant for Westernacher Consulting,
+a global SAP and business consulting firm with 55+ years of innovation. Their tagline
+is "Nonstop Innovation" and they believe in partnership. Your writing style reflects
+the Westernacher brand voice:
 
-- First-person perspective, sharing personal experiences or insights
-- Professional but approachable tone
+- First-person perspective from a consulting professional sharing insights and expertise
+- Innovative, partnership-driven, confident, and forward-looking tone
+- Expert authority in SAP consulting, digital transformation, and operational excellence
 - Structured with short paragraphs and line breaks for readability
 - Includes a hook in the first line to grab attention
 - Ends with a question or call-to-action to drive engagement
-- Uses relevant hashtags (3-5 max) at the end
-- Avoids corporate jargon; feels authentic and human
+- Uses clear, purposeful language — avoids generic corporate jargon
+- Weaves in themes of innovation, partnership, sustainability, and technology-driven transformation
 - Optimal length: 150-300 words (LinkedIn sweet spot for engagement)
 - Uses line breaks between paragraphs for mobile readability
+- Always includes #WesternacherConsulting and #NonstopInnovation among the hashtags (3-5 total)
 """
 
 FALLBACK_TEMPLATES = {
-    "leadership": """I've been reflecting on what leadership really means in today's fast-paced world.
+    "innovation": """Nonstop Innovation isn't just a tagline — it's a mindset.
 
-It's not about having all the answers. It's about asking the right questions and creating space for your team to find solutions.
+At Westernacher, we've spent 55+ years proving that innovation isn't a single breakthrough moment. It's the discipline of questioning assumptions every single day.
 
-Last week, I stepped back during a critical project decision. Instead of directing, I listened. The result? My team came up with an approach I never would have considered — and it worked brilliantly.
+I recently worked with a client who had been running the same warehouse processes for a decade. We didn't overhaul everything at once. We started small — one process, one question: "Why do we do it this way?"
 
-Three things I've learned about modern leadership:
+The results spoke for themselves:
 
-→ Vulnerability is strength, not weakness
-→ The best ideas often come from unexpected places
-→ Your job isn't to be the smartest person in the room
+→ 30% faster order fulfillment
+→ Real-time visibility across the entire supply chain
+→ A team that now sees change as opportunity, not disruption
 
-What's the most important leadership lesson you've learned this year?
+Innovation is not about the newest technology. It's about solving real problems with the right approach.
 
-#Leadership #Management #BusinessGrowth #PersonalDevelopment #TeamWork""",
-    "innovation": """Innovation doesn't always look like a breakthrough moment.
+What's one assumption in your business you've never questioned?
 
-Sometimes it's a small process change. A different way of looking at an old problem. A question nobody thought to ask.
+#WesternacherConsulting #NonstopInnovation #DigitalTransformation #SAP #Innovation""",
+    "digital transformation": """Digital transformation fails when it starts with technology.
 
-I recently challenged my team to find one thing we do "because we've always done it that way." We found seven. We changed five of them.
+It succeeds when it starts with people and processes. After 30+ years as an SAP partner, this is the most important lesson I've learned at Westernacher.
 
-The result? 30% faster delivery time and a team that feels more empowered than ever.
+We recently helped a global enterprise migrate to S/4HANA. The technology was the easy part. The real challenge? Aligning 12 country teams around a shared vision for operational excellence.
 
-Real innovation starts with:
+Here's what made the difference:
 
-→ Questioning assumptions
-→ Embracing discomfort
-→ Celebrating small wins
+→ Starting with the business outcome, not the tool
+→ Building partnerships across every level of the organization
+→ Treating change management as a first-class priority
 
-What's one process in your work that could use a fresh perspective?
+Technology-driven innovation works when people believe in the journey — not just the destination.
 
-#Innovation #BusinessStrategy #GrowthMindset #Entrepreneurship #Change""",
-    "career": """5 years ago, I made a career decision that everyone told me was a mistake.
+Where does your organization stand on its transformation roadmap?
 
-I left a comfortable position to pursue something that scared me. There were sleepless nights. Moments of doubt. Times I questioned everything.
+#WesternacherConsulting #NonstopInnovation #DigitalTransformation #S4HANA #SAP""",
+    "leadership": """The best leaders I've met in consulting don't have all the answers.
 
-But here's what I learned:
+They have the courage to ask better questions. At Westernacher, we believe in partnership — and that starts with how we lead.
 
-→ Growth never happens in comfort zones
-→ The "risky" path often has the biggest rewards
-→ Your network becomes your net worth during transitions
+During a recent SAP implementation, our project lead did something unexpected. Instead of presenting the solution, she facilitated a workshop where the client's team designed it themselves. Our role? Guiding, challenging, and enabling.
 
-Looking back, that "mistake" was the best decision I ever made. Not because it was easy — but because it forced me to grow in ways I never expected.
+The outcome was remarkable:
 
-If you're standing at a career crossroads right now, trust yourself. The path less traveled has a way of becoming the right one.
+→ 95% user adoption in the first quarter
+→ A client team that owns their system, not just uses it
+→ A partnership that continues to grow
 
-What career leap are you considering?
+Leadership in consulting isn't about being the expert in the room. It's about unlocking the expertise that's already there.
 
-#CareerGrowth #ProfessionalDevelopment #CareerAdvice #Motivation #Success""",
-    "technology": """The technology landscape is shifting faster than ever.
+What does partnership mean in your leadership style?
 
-But here's what most people get wrong: it's not about adopting every new tool. It's about understanding which ones solve real problems.
+#WesternacherConsulting #NonstopInnovation #Leadership #Partnership #Consulting""",
+    "supply chain": """Supply chains don't break overnight. They erode slowly — through disconnected systems, siloed data, and outdated processes.
 
-I recently audited the tech stack at my organization. We were using 15 different tools. We needed 6.
+At Westernacher, we've been pioneering supply chain solutions for decades. From SAP EWM to TM to Yard Logistics, we've seen what separates resilient supply chains from fragile ones.
 
-The simplification led to:
+A recent client transformation revealed a familiar pattern:
 
-→ Better team collaboration
-→ Reduced costs by 40%
-→ Clearer workflows and less context-switching
+→ 4 disconnected warehouse systems generating conflicting data
+→ Manual handoffs creating 48-hour blind spots
+→ No real-time visibility from dock to delivery
 
-Technology should amplify human capability, not complicate it.
+After implementing an integrated SAP logistics platform:
 
-Before you adopt the next shiny tool, ask yourself: "Does this solve a problem we actually have?"
+→ End-to-end visibility in real time
+→ 40% reduction in logistics costs
+→ Faster response to demand shifts
 
-What's your approach to evaluating new technology?
+The future of supply chain is connected, intelligent, and sustainable.
 
-#Technology #DigitalTransformation #Productivity #TechStrategy #BusinessTools""",
-    "default": """Something happened recently that completely changed my perspective on {topic}.
+Where are the blind spots in your supply chain?
 
-We often get caught up in the day-to-day that we forget to step back and look at the bigger picture. When I did exactly that last week, I realized something important.
+#WesternacherConsulting #NonstopInnovation #SupplyChain #Logistics #SAP""",
+    "sustainability": """Carbon neutral since 2021. That's not just a milestone — it's a commitment.
 
-The most successful people I know share three traits when it comes to {topic}:
+At Westernacher, sustainability isn't a side project. It's woven into how we operate, how we advise our clients, and how we think about technology's role in building a better future.
 
-→ They stay curious and never stop learning
-→ They're not afraid to challenge the status quo
-→ They focus on impact, not just activity
+But here's what I've learned: sustainability in business isn't only about reducing emissions. It's about:
 
-This isn't just theory — it's what I've seen work time and again in my own experience.
+→ Building processes that are efficient by design, not by accident
+→ Using technology to measure, track, and improve impact
+→ Making sustainability a competitive advantage, not a compliance checkbox
 
-What's your take on {topic}? I'd love to hear different perspectives.
+The enterprises that will thrive in the next decade are the ones embedding sustainability into their digital transformation strategy today.
 
-#Business #ProfessionalGrowth #LinkedIn #Insights #Learning""",
+How is your organization connecting sustainability with technology?
+
+#WesternacherConsulting #NonstopInnovation #Sustainability #GreenBusiness #DigitalTransformation""",
+    "technology": """The technology landscape is shifting faster than ever. But adopting every new tool isn't innovation — it's noise.
+
+At Westernacher, with 30+ years as an SAP partner, we've learned that the right technology solves real problems. The wrong technology creates new ones.
+
+A recent enterprise audit revealed a familiar story: 15 disconnected tools doing the work of 6 integrated ones.
+
+After simplification and SAP consolidation:
+
+→ Unified data across the organization
+→ 40% reduction in operational costs
+→ Teams collaborating instead of context-switching
+
+Technology should amplify human capability and drive operational excellence — not complicate it.
+
+Before you adopt the next platform, ask: "Does this solve a problem we actually have?"
+
+What's your approach to technology simplification?
+
+#WesternacherConsulting #NonstopInnovation #SAP #Technology #OperationalExcellence""",
+    "default": """Something happened recently that shifted my perspective on {topic}.
+
+At Westernacher, we believe in partnership and nonstop innovation. These aren't just words — they shape how we approach every challenge, including {topic}.
+
+Working across 26 countries with enterprises navigating digital transformation, I've noticed the most successful organizations share three traits:
+
+→ They stay curious and question established approaches
+→ They invest in partnerships, not just vendor relationships
+→ They focus on sustainable impact, not short-term fixes
+
+After 55+ years of consulting, this isn't theory. It's what we see work, project after project, transformation after transformation.
+
+What's your perspective on {topic}? I'd welcome the conversation.
+
+#WesternacherConsulting #NonstopInnovation #Consulting #DigitalTransformation #Partnership""",
 }
 
 
@@ -137,6 +179,25 @@ def _generate_with_openai(topic: str, context: str, tone: str) -> str:
 def _generate_from_template(topic: str) -> str:
     topic_lower = topic.lower()
     for key, template in FALLBACK_TEMPLATES.items():
-        if key in topic_lower:
+        if key != "default" and key in topic_lower:
             return template
+    # Check for partial keyword matches
+    keyword_map = {
+        "sap": "technology",
+        "s/4hana": "technology",
+        "ewm": "supply chain",
+        "warehouse": "supply chain",
+        "logistics": "supply chain",
+        "yard": "supply chain",
+        "transform": "digital transformation",
+        "carbon": "sustainability",
+        "green": "sustainability",
+        "partner": "leadership",
+        "collaborat": "leadership",
+        "operational": "innovation",
+        "excellence": "innovation",
+    }
+    for keyword, template_key in keyword_map.items():
+        if keyword in topic_lower and template_key in FALLBACK_TEMPLATES:
+            return FALLBACK_TEMPLATES[template_key]
     return FALLBACK_TEMPLATES["default"].replace("{topic}", topic)

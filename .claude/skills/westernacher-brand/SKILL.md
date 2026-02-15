@@ -1,7 +1,6 @@
 ---
 name: westernacher-brand
 description: Apply Westernacher Consulting brand identity, color coding, typography, and voice guidelines to UI, styles, templates, and generated content. Use when modifying CSS, creating UI components, or generating LinkedIn posts.
-user-invocable: true
 ---
 
 # Westernacher Brand Skill

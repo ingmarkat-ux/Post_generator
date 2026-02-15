@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Post Generator</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/>
+                        <rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>
+                    </svg>
+                </div>
+                <h1>Post Generator</h1>
+            </div>
+            <div class="header-right">
+                <div id="linkedin-status" class="linkedin-badge">
+                    {% if linkedin_connected %}
+                        <span class="status-dot connected"></span>
+                        <span>{{ user_name }}</span>
+                        <button onclick="disconnectLinkedIn()" class="btn-text">Disconnect</button>
+                    {% else %}
+                        <span class="status-dot"></span>
+                        <a href="/auth/linkedin" class="btn-connect">Connect LinkedIn</a>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Left Panel: Topic & Generation -->
+            <section class="panel panel-left">
+                <div class="panel-header">
+                    <h2>Create Post</h2>
+                </div>
+
+                <!-- Topic Selection -->
+                <div class="form-group">
+                    <label for="topic-select">Select Topic</label>
+                    <div class="topic-grid">
+                        <button class="topic-chip" data-topic="Leadership">Leadership</button>
+                        <button class="topic-chip" data-topic="Innovation">Innovation</button>
+                        <button class="topic-chip" data-topic="Career Growth">Career Growth</button>
+                        <button class="topic-chip" data-topic="Technology">Technology</button>
+                        <button class="topic-chip" data-topic="Productivity">Productivity</button>
+                        <button class="topic-chip" data-topic="Networking">Networking</button>
+                        <button class="topic-chip" data-topic="Entrepreneurship">Entrepreneurship</button>
+                        <button class="topic-chip" data-topic="Work-Life Balance">Work-Life Balance</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="custom-topic">Or enter your own topic</label>
+                    <input type="text" id="custom-topic" placeholder="e.g., Remote team management" />
+                </div>
+
+                <div class="form-group">
+                    <label for="context">Additional context <span class="optional">(optional)</span></label>
+                    <textarea id="context" rows="3" placeholder="Add any specific details, personal experiences, or angles you'd like the post to cover..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Tone</label>
+                    <div class="tone-options">
+                        <label class="radio-card active">
+                            <input type="radio" name="tone" value="professional-personal" checked>
+                            <span class="radio-label">Professional & Personal</span>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="tone" value="thought-leadership">
+                            <span class="radio-label">Thought Leadership</span>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="tone" value="storytelling">
+                            <span class="radio-label">Storytelling</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button id="btn-activate" class="btn-primary btn-activate" onclick="generatePost()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    </svg>
+                    Activate
+                </button>
+            </section>
+
+            <!-- Right Panel: Editor & Scheduling -->
+            <section class="panel panel-right" id="editor-panel">
+                <div class="panel-header">
+                    <h2>Edit & Schedule</h2>
+                    <div class="post-actions" id="post-actions" style="display:none;">
+                        <button class="btn-icon" onclick="regeneratePost()" title="Regenerate">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                            </svg>
+                        </button>
+                        <span class="char-count" id="char-count">0 characters</span>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="empty-state">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    <p>Select a topic and click <strong>Activate</strong> to generate your post</p>
+                </div>
+
+                <!-- Post Editor -->
+                <div id="editor-area" style="display:none;">
+                    <div class="form-group">
+                        <label for="post-editor">Post Content</label>
+                        <textarea id="post-editor" rows="14" placeholder="Your generated post will appear here..."></textarea>
+                    </div>
+
+                    <!-- LinkedIn Preview -->
+                    <div class="preview-section">
+                        <button class="btn-text" onclick="togglePreview()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            Toggle Preview
+                        </button>
+                        <div id="preview-container" class="preview-card" style="display:none;">
+                            <div class="preview-header">
+                                <div class="preview-avatar"></div>
+                                <div>
+                                    <div class="preview-name" id="preview-name">Your Name</div>
+                                    <div class="preview-meta">Just now · <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+                                </div>
+                            </div>
+                            <div class="preview-body" id="preview-body"></div>
+                        </div>
+                    </div>
+
+                    <!-- Scheduling -->
+                    <div class="schedule-section">
+                        <h3>Schedule Post</h3>
+                        <p class="section-desc">Select an optimal time slot or choose a custom time</p>
+
+                        <div id="time-slots" class="time-slots">
+                            <!-- Populated by JS -->
+                        </div>
+
+                        <div class="custom-time">
+                            <label for="custom-datetime">Or select custom date & time</label>
+                            <input type="datetime-local" id="custom-datetime" />
+                        </div>
+
+                        <div class="schedule-actions">
+                            <button class="btn-primary" onclick="schedulePost()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                Schedule Post
+                            </button>
+                            <button class="btn-secondary" onclick="postNow()" id="btn-post-now">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                                </svg>
+                                Post Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Scheduled Posts Overview -->
+        <section class="scheduled-overview" id="scheduled-overview">
+            <div class="panel-header">
+                <h2>Scheduled Posts</h2>
+                <button class="btn-text" onclick="refreshScheduled()">Refresh</button>
+            </div>
+            <div id="scheduled-list" class="scheduled-list">
+                <p class="empty-text">No scheduled posts yet</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
